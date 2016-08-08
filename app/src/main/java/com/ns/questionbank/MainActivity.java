@@ -1,6 +1,7 @@
 package com.ns.questionbank;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 public int COUNT = 1;
     public int[] your_answer = new int[29];
-    public int MAXIMUM_QUESTIONS ;
+    public int[] correct_answer = new int[29];
+    public int MAXIMUM_QUESTIONS,final_score ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,14 +30,7 @@ public int COUNT = 1;
         Button button_previous = (Button) findViewById(R.id.button_previous);
         Button button_submit = (Button) findViewById(R.id.button_submit);
         RadioGroup radiogroup = (RadioGroup)findViewById(R.id.radioGroup_question);
-        radiogroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
 
-
-
-            }
-        });
         button_next.setOnClickListener(this);
         button_previous.setOnClickListener(this);
         button_submit.setOnClickListener(this);
@@ -44,13 +39,13 @@ public int COUNT = 1;
 
         Log.d("Insert: ", "Inserting ..");
         db.addQuestionBank(new QuestionBank(1,2,
-                "Q1) The Outer most and inner most wall layers of microsporangium in an anther are respectively:",
-                "A) Endothecium and Tapetum",
-                "B) Epidermis and Endodermis",
-                "C) Epidermis and Middle Layer",
-                "D) Epidermis and Tapetum"));
+                "Q1)The Outer most and inner most wall layers of microsporangium in an anther are respectively:",
+                "A) Endothecium and Tapetum                  ",
+                "B) Epidermis and Endodermis                 ",
+                "C) Epidermis and Middle Layer               ",
+                "D) Epidermis and Tapetum                    "));
         db.addQuestionBank(new QuestionBank(2,2,
-                "Q2) During micosporogenesis meiosis occurs in :                                               ",
+                "Q2)During micosporogenesis meiosis occurs in :                                               ",
                 "A) Endothecium                        ",
                 "B) Microspore mother cell             ",
                 "C) Microspore tetrads                 ",
@@ -70,22 +65,26 @@ public int COUNT = 1;
         radioButton_option4.setText(questionbank.getOptionFour());
 
 
-        /* Commenting logic for getting all questions
+        // Commenting logic for getting all questions
         List<QuestionBank> questionBanks = db.getAllQuestion();
         for (QuestionBank questionBank : questionBanks) {
-            String log = "Number" + questionBank.getQuestionNumber() + questionBank.getQuestiontext()
+            String log = "Number" + questionBank.getQuestionNumber()
+                    +questionBank.getCorrectAnswer()
+                    + questionBank.getQuestiontext()
                     + questionBank.getOptionOne()
                     + questionBank.getOptionTwo()
                     + questionBank.getOptionThree()
                     + questionBank.getOptionFour();
             Log.d("Question", log);
-        } */
+        }
+
 
     }
 
     @Override
     public void onClick(View v) {
 
+        //submit_intent.putExtra("Ten");
 
         switch (v.getId()) {
                 case R.id.button_next:
@@ -94,7 +93,7 @@ public int COUNT = 1;
                     toast.show();
                     COUNT = COUNT +1;
                     if (COUNT >= MAXIMUM_QUESTIONS) COUNT = MAXIMUM_QUESTIONS;
-
+                    your_answer[COUNT] = GetAnswer(COUNT);
                     DisplayMCQ(COUNT);
                     break;
                 case R.id.button_previous:
@@ -104,7 +103,8 @@ public int COUNT = 1;
                     DisplayMCQ(COUNT);
                     break;
                 case R.id.button_submit:
-                    Log.d("Clicked Submit: ", "Clicked Submit");
+                    Intent submit_intent =  new Intent(this,SubmitActivity.class);
+                    startActivity(submit_intent);
                     break;
         }
     }
@@ -126,6 +126,21 @@ public int COUNT = 1;
         radioButton_option3.setText(questionbank.getOptionThree());
         radioButton_option4.setText(questionbank.getOptionFour());
 
+    }
+
+    public int GetAnswer(int question_number)
+    {
+       RadioGroup radiogroup_question = (RadioGroup)findViewById(R.id.radioGroup_question);
+       int selected_option = radiogroup_question.getCheckedRadioButtonId();
+        RadioButton radioButton = (RadioButton) findViewById(selected_option);
+        if (radioButton == (RadioButton)findViewById(R.id.radioButton_option1)) your_answer[question_number] = 1;
+        if (radioButton == (RadioButton)findViewById(R.id.radioButton_option2)) your_answer[question_number] = 2;
+        if (radioButton == (RadioButton)findViewById(R.id.radioButton_option3)) your_answer[question_number] = 3;
+        if (radioButton == (RadioButton)findViewById(R.id.radioButton_option4)) your_answer[question_number] = 4;
+
+        Toast toast = Toast.makeText(getApplicationContext(), "Your Option:" + String.valueOf(your_answer[question_number]), Toast.LENGTH_SHORT);
+        toast.show();
+        return your_answer[question_number];
     }
 }
 
