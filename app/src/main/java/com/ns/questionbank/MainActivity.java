@@ -19,6 +19,8 @@ public int COUNT = 1;
     public int[] your_answer = new int[29];
     public int[] correct_answer = new int[29];
     public int MAXIMUM_QUESTIONS,final_score ;
+    private UserAnswer userAnswer = new UserAnswer();
+    DBHandler db1 = new DBHandler(this);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,15 +87,19 @@ public int COUNT = 1;
     public void onClick(View v) {
 
         //submit_intent.putExtra("Ten");
+        QuestionBank questionBank = new QuestionBank();
 
         switch (v.getId()) {
                 case R.id.button_next:
                     Log.d("Clicked Next: ", "Clicked Next");
                     Toast toast = Toast.makeText(getApplicationContext(), "Clicked Next", Toast.LENGTH_SHORT);
                     toast.show();
+
+
+                    your_answer[COUNT] = GetAnswer(COUNT);
+                    db1.addUpdateYourAnswer(new UserAnswer(COUNT,your_answer[COUNT]));
                     COUNT = COUNT +1;
                     if (COUNT >= MAXIMUM_QUESTIONS) COUNT = MAXIMUM_QUESTIONS;
-                    your_answer[COUNT] = GetAnswer(COUNT);
                     DisplayMCQ(COUNT);
                     break;
                 case R.id.button_previous:
@@ -104,6 +110,8 @@ public int COUNT = 1;
                     break;
                 case R.id.button_submit:
                     Intent submit_intent =  new Intent(this,SubmitActivity.class);
+                    Toast toast1 = Toast.makeText(getApplicationContext(),  "Records in Answer bank" + String.valueOf(db1.getAnswerCount()), Toast.LENGTH_SHORT);
+                    toast1.show();
                     startActivity(submit_intent);
                     break;
         }
