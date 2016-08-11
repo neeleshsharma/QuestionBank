@@ -31,11 +31,13 @@ public int COUNT = 1;
         Button button_next = (Button) findViewById(R.id.button_next);
         Button button_previous = (Button) findViewById(R.id.button_previous);
         Button button_submit = (Button) findViewById(R.id.button_submit);
+        Button button_save = (Button) findViewById(R.id.button_save);
         RadioGroup radiogroup = (RadioGroup)findViewById(R.id.radioGroup_question);
 
         button_next.setOnClickListener(this);
         button_previous.setOnClickListener(this);
         button_submit.setOnClickListener(this);
+        button_save.setOnClickListener(this);
 
         db.deleteAll();
 
@@ -53,6 +55,9 @@ public int COUNT = 1;
                 "C) Microspore tetrads                 ",
                 "D) Pollen grains                      "));
         Log.d("Reading", "Reading all Questions");
+        for (int j = 1 ; j<=30;j++) {
+            db.defaultInsertYourAnswer(new UserAnswer(j,0));
+        }
         QuestionBank questionbank = db.getSingleQuestion(COUNT);
         TextView textView_question_text = (TextView) findViewById(R.id.textView_question_number);
 
@@ -92,28 +97,34 @@ public int COUNT = 1;
         switch (v.getId()) {
                 case R.id.button_next:
                     Log.d("Clicked Next: ", "Clicked Next");
-                    Toast toast = Toast.makeText(getApplicationContext(), "Clicked Next", Toast.LENGTH_SHORT);
-                    toast.show();
+                   // Toast toast = Toast.makeText(getApplicationContext(), "Clicked Next", Toast.LENGTH_SHORT);
+                   // toast.show();
 
 
-                    your_answer[COUNT] = GetAnswer(COUNT);
-                    db1.addUpdateYourAnswer(new UserAnswer(COUNT,your_answer[COUNT]));
-                    COUNT = COUNT +1;
-                    if (COUNT >= MAXIMUM_QUESTIONS) COUNT = MAXIMUM_QUESTIONS;
-                    DisplayMCQ(COUNT);
+                      //  your_answer[COUNT] = SetAnswer(COUNT);
+                        //  db1.addUpdateYourAnswer(new UserAnswer(COUNT,your_answer[COUNT]));
+                        COUNT = COUNT +1;
+                        if (COUNT >= MAXIMUM_QUESTIONS) COUNT = MAXIMUM_QUESTIONS;
+                        DisplayMCQ(COUNT);
+
+
+
                     break;
                 case R.id.button_previous:
-                    Log.d("Clicked Previous: ", "Clicked Previous");
                     COUNT = COUNT - 1;
                     if (COUNT <=1) COUNT = 1;
                     DisplayMCQ(COUNT);
                     break;
                 case R.id.button_submit:
                     Intent submit_intent =  new Intent(this,SubmitActivity.class);
-                    Toast toast1 = Toast.makeText(getApplicationContext(),  "Records in Answer bank" + String.valueOf(db1.getAnswerCount()), Toast.LENGTH_SHORT);
-                    toast1.show();
+
                     startActivity(submit_intent);
                     break;
+                case R.id.button_save:
+                    your_answer[COUNT] = SetAnswer(COUNT);
+                    db1.UpdateYourAnswer(new UserAnswer(COUNT,your_answer[COUNT]));
+                    break;
+
         }
     }
 
@@ -122,21 +133,44 @@ public int COUNT = 1;
         DBHandler db = new DBHandler(this);
         QuestionBank questionbank = db.getSingleQuestion(count);
         RadioGroup radioGroup_question = (RadioGroup)findViewById(R.id.radioGroup_question);
-        radioGroup_question.clearCheck();
+        int j = 0;
+        j = db1.GetUserAnswer(COUNT) ;
+        Toast toast = Toast.makeText(getApplicationContext(), "Value of j:" + String.valueOf(j), Toast.LENGTH_SHORT);
+        toast.show();
+        if (j ==0) {
+            radioGroup_question.clearCheck();
         TextView textView_question_text = (TextView) findViewById(R.id.textView_question_number);
-        RadioButton radioButton_option1 = (RadioButton)findViewById(R.id.radioButton_option1) ;
-        RadioButton radioButton_option2 = (RadioButton)findViewById(R.id.radioButton_option2) ;
-        RadioButton radioButton_option3 = (RadioButton)findViewById(R.id.radioButton_option3) ;
-        RadioButton radioButton_option4 = (RadioButton)findViewById(R.id.radioButton_option4) ;
+        RadioButton radioButton_option1 = (RadioButton) findViewById(R.id.radioButton_option1);
+        RadioButton radioButton_option2 = (RadioButton) findViewById(R.id.radioButton_option2);
+        RadioButton radioButton_option3 = (RadioButton) findViewById(R.id.radioButton_option3);
+        RadioButton radioButton_option4 = (RadioButton) findViewById(R.id.radioButton_option4);
         textView_question_text.setText(questionbank.getQuestiontext());
         radioButton_option1.setText(questionbank.getOptionOne());
         radioButton_option2.setText(questionbank.getOptionTwo());
         radioButton_option3.setText(questionbank.getOptionThree());
         radioButton_option4.setText(questionbank.getOptionFour());
+    }
+        else {
+            TextView textView_question_text = (TextView) findViewById(R.id.textView_question_number);
+            RadioButton radioButton_option1 = (RadioButton) findViewById(R.id.radioButton_option1);
+            RadioButton radioButton_option2 = (RadioButton) findViewById(R.id.radioButton_option2);
+            RadioButton radioButton_option3 = (RadioButton) findViewById(R.id.radioButton_option3);
+            RadioButton radioButton_option4 = (RadioButton) findViewById(R.id.radioButton_option4);
+            textView_question_text.setText(questionbank.getQuestiontext());
+            radioButton_option1.setText(questionbank.getOptionOne());
+            radioButton_option2.setText(questionbank.getOptionTwo());
+            radioButton_option3.setText(questionbank.getOptionThree());
+            radioButton_option4.setText(questionbank.getOptionFour());
+            if (j==1) radioButton_option1.setChecked(true);
+            if (j==2) radioButton_option2.setChecked(true);
+            if (j==3) radioButton_option3.setChecked(true);
+            if (j==4) radioButton_option4.setChecked(true);
+
+        }
 
     }
 
-    public int GetAnswer(int question_number)
+    public int SetAnswer(int question_number)
     {
        RadioGroup radiogroup_question = (RadioGroup)findViewById(R.id.radioGroup_question);
        int selected_option = radiogroup_question.getCheckedRadioButtonId();
@@ -146,9 +180,10 @@ public int COUNT = 1;
         if (radioButton == (RadioButton)findViewById(R.id.radioButton_option3)) your_answer[question_number] = 3;
         if (radioButton == (RadioButton)findViewById(R.id.radioButton_option4)) your_answer[question_number] = 4;
 
-        Toast toast = Toast.makeText(getApplicationContext(), "Your Option:" + String.valueOf(your_answer[question_number]), Toast.LENGTH_SHORT);
-        toast.show();
+
         return your_answer[question_number];
     }
+
+
 }
 

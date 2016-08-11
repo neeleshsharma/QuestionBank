@@ -63,6 +63,7 @@ public class DBHandler extends SQLiteOpenHelper
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_QUESTION_BANK);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER_ANSWER);
 // Creating tables again
         onCreate(db);
     }
@@ -86,6 +87,7 @@ public class DBHandler extends SQLiteOpenHelper
     {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_QUESTION_BANK,null,null);
+        db.delete(TABLE_USER_ANSWER,null,null);
        // db1.execSQL("TRUNCATE TABLE " + TABLE_QUESTION_BANK);
     }
 
@@ -101,9 +103,9 @@ public class DBHandler extends SQLiteOpenHelper
     public int getAnswerCount()
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor c1 = db.rawQuery("select * from " + TABLE_USER_ANSWER,null);
-        // c.close();
-        return c1.getCount();
+        Cursor c = db.rawQuery("select * from " + TABLE_USER_ANSWER,null);
+        c.close();
+        return c.getCount();
 
     }
 
@@ -149,21 +151,34 @@ public class DBHandler extends SQLiteOpenHelper
         db.close();
         return questionbank;
     }
-    public void addUpdateYourAnswer(UserAnswer userAnswer)
+    public void defaultInsertYourAnswer(UserAnswer userAnswer)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         ContentValues values1 = new ContentValues();
-        values.put(KEY_USER_ANSWER,userAnswer.getUserAnswer());
-        values1.put(KEY_USER_ANSWER,userAnswer.getUserAnswer());
         values.put(KEY_USER_QUESTION_NUMBER, userAnswer.getQuestionNumber());
+        values.put(KEY_USER_ANSWER,userAnswer.getUserAnswer());
+        //values1.put(KEY_USER_ANSWER,userAnswer.getUserAnswer());
+        db.insert(TABLE_USER_ANSWER, null, values);
+        /*****************************
         Cursor cr = db.rawQuery("SELECT * FROM "+ TABLE_USER_ANSWER +" WHERE question_number = " + userAnswer.getQuestionNumber(),null);
         if (cr == null) db.insert(TABLE_USER_ANSWER, null, values);
         //else  db.update(TABLE_USER_ANSWER,values1,null);
         else db.execSQL("Update "+ TABLE_USER_ANSWER +" SET "+ KEY_USER_ANSWER+ " = "+userAnswer.getUserAnswer() +" WHERE "
         + KEY_QUESTION_NUMBER +" = "+ userAnswer.getQuestionNumber()
-        );
+        );*************************/
         db.close();
+    }
+    public void UpdateYourAnswer(UserAnswer userAnswer)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        String updateQuery ="UPDATE " + TABLE_USER_ANSWER+ " SET " + KEY_USER_ANSWER +" = "+userAnswer.getUserAnswer()
+                +" WHERE " +KEY_QUESTION_NUMBER +" = "+ userAnswer.getQuestionNumber();
+        Cursor c = db.rawQuery(updateQuery,null);
+        c.moveToFirst();
+        c.close();
+
     }
 
     public List<UserAnswer> getUserAnswer()
@@ -196,20 +211,37 @@ public class DBHandler extends SQLiteOpenHelper
         String selectquery = "SELECT " + KEY_CORRECT_ANSWER +" FROM " +TABLE_QUESTION_BANK
                 +" WHERE question_number = "  +questionNumber;
         Cursor cursor = db.rawQuery(selectquery,null);
-      //  i=(int)Integer.parseInt(cursor.getString(0));
+
         if (cursor !=null) {
             if (cursor.moveToFirst()) i = cursor.getInt(0);
         }
+        //i=Integer.parseInt(cursor.getString(0));
 
         String selectquery1 = "SELECT " + KEY_USER_ANSWER +" FROM " +TABLE_USER_ANSWER
                 +" WHERE question_number = "  +questionNumber;
         Cursor cursor1 = db.rawQuery(selectquery1,null);
-        //j=Integer.parseInt(cursor.getString(0));
+       // j=Integer.parseInt(cursor.getString(0));
         if (cursor !=null) {
             if (cursor1.moveToFirst()) j= cursor1.getInt(0);
         }
         if ( i == j) return 1 ;else return 0;
         //Select correct_answer from questionbank where question_number = questionNumber
+    }
+
+    public int GetUserAnswer(int questionNumber)
+    {
+        int i=0;
+        int j=0;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectquery = "SELECT " + KEY_USER_ANSWER +" FROM " +TABLE_USER_ANSWER
+                +" WHERE question_number = "  +questionNumber;
+        Cursor cursor = db.rawQuery(selectquery,null);
+        //  i=(int)Integer.parseInt(cursor.getString(0));
+        if (cursor !=null) {
+            if (cursor.moveToFirst()) i = cursor.getInt(0);
+        }
+        return i;
     }
 
 }
